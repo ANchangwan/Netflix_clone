@@ -49,17 +49,42 @@ const Info = styled(motion.div)`
 `;
 
 const BigMovie = styled(motion.div)`
-  position: "absolute";
-  height: "80vh";
-  width: "40vw";
+  position: absolute;
+  height: 80vh;
+  width: 40vw;
   left: 0;
   right: 0;
-  margin: "0 auto";
+  margin: 0 auto;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.black.lighter};
+`;
+
+const BigCover = styled.img`
+  height: 300px;
+  width: 100%;
+  background-position: center center;
+  background-size: cover;
+`;
+
+const BigTitle = styled.h2`
+  color: ${(props) => props.theme.white.lighter};
+  font-size: 28px;
+  position: relative;
+  padding: 20px;
+  top: -60px;
 `;
 
 const OverView = styled.p`
   font-size: 20px;
   width: 50%;
+`;
+
+const BigOverview = styled.p`
+  padding: 20px;
+  position: relative;
+  top: -80px;
+  color: ${(props) => props.theme.white.lighter};
 `;
 
 const Slider = styled(motion.div)`
@@ -162,6 +187,12 @@ function Home() {
     }
   };
   const [leaving, setLeaving] = useState(false);
+  const clickedMovie =
+    bigMovieMatch?.params.movieId &&
+    data?.results.find(
+      (movie) => movie.id + "" === bigMovieMatch?.params.movieId
+    );
+
   const toggleLeavig = () => setLeaving((prev) => !prev);
   const onBoxClicked = (movieId: number) => {
     navigate(`/movies/${movieId}`);
@@ -222,7 +253,22 @@ function Home() {
                 <BigMovie
                   style={{ top: scrollY.get() + 100 }}
                   layoutId={bigMovieMatch.params.movieId}
-                ></BigMovie>
+                >
+                  {clickedMovie && (
+                    <>
+                      <BigCover
+                        style={{
+                          backgroundImage: `url(${makeImagePath(
+                            clickedMovie.backdrop_path,
+                            "w500"
+                          )})`,
+                        }}
+                      />
+                      <BigTitle>{clickedMovie.title}</BigTitle>
+                      <BigOverview>{clickedMovie.overview}</BigOverview>
+                    </>
+                  )}
+                </BigMovie>
               </>
             ) : null}
           </AnimatePresence>
