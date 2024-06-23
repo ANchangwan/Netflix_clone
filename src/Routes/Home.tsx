@@ -165,6 +165,8 @@ const infoVariants = {
 
 const offset = 6;
 
+
+
 function Home() {
   const navigate = useNavigate();
   const { scrollY } = useScroll();

@@ -1,4 +1,11 @@
+import { useLocation } from "react-router-dom";
+
 function Search() {
-  return <div style={{ height: "200vh", backgroundColor: "red" }}>Search</div>;
+  const {
+    state: { keyword },
+  } = useLocation();
+  console.log(keyword);
+
+  return <div>hello</div>;
 }
 export default Search;
