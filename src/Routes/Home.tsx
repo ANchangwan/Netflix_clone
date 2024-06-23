@@ -1,5 +1,5 @@
 import { useQuery } from "react-query";
-import { Outlet } from "react-router-dom";
+import { useMatch, useNavigate } from "react-router-dom";
 import { IGetMoviesResult, getMovies } from "./api";
 import { styled } from "styled-components";
 import { makeImagePath } from "./utilit";
@@ -34,6 +34,20 @@ const Title = styled.h2`
   font-weight: 600;
   margin-bottom: 10px;
 `;
+
+const Info = styled(motion.div)`
+  padding: 10px;
+  background-color: ${(props) => props.theme.black.lighter};
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  h4 {
+    text-align: center;
+    font-size: 18px;
+  }
+`;
+
 const OverView = styled.p`
   font-size: 20px;
   width: 50%;
@@ -54,12 +68,15 @@ const Row = styled(motion.div)`
 
 const Box = styled(motion.div)<{ bgPhoto: string }>`
   background-color: white;
-  color: red;
   font-size: 66px;
   height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   background-image: url(${(props) => props.bgPhoto});
   background-size: cover;
   background-position: center center;
+  cursor: pointer;
   &:first-child {
     transform-origin: center left;
   }
@@ -92,10 +109,23 @@ const boxVariants = {
     },
   },
 };
+const infoVariants = {
+  hover: {
+    opacity: 1,
+    transition: {
+      delay: 0.5,
+      duaration: 0.1,
+      type: "tween",
+    },
+  },
+};
 
 const offset = 6;
 
 function Home() {
+  const navigate = useNavigate();
+  const bigMovieMatch = useMatch("/movies/:movieId");
+  console.log(bigMovieMatch);
   const { data, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "now_playing"],
     getMovies
@@ -112,7 +142,9 @@ function Home() {
   };
   const [leaving, setLeaving] = useState(false);
   const toggleLeavig = () => setLeaving((prev) => !prev);
-  console.log(data?.results);
+  const onBoxClicked = (movieId: number) => {
+    navigate(`/movies/${movieId}`);
+  };
   return (
     <Wrapper>
       {isLoading ? (
@@ -141,17 +173,40 @@ function Home() {
                   .slice(offset * index, offset * index + offset)
                   .map((movie) => (
                     <Box
+                      layoutId={movie.id + ""}
+                      onClick={() => onBoxClicked(movie.id)}
                       variants={boxVariants}
                       whileHover="hover"
                       initial="normal"
                       transition={{ type: "tween" }}
                       key={movie.id}
                       bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
-                    />
+                    >
+                      <Info variants={infoVariants}>
+                        <h4>{movie.title}</h4>
+                      </Info>
+                    </Box>
                   ))}
               </Row>
             </AnimatePresence>
           </Slider>
+          <AnimatePresence>
+            {bigMovieMatch ? (
+              <motion.div
+                layoutId={bigMovieMatch.params.movieId}
+                style={{
+                  position: "absolute",
+                  height: "80vh",
+                  width: "40vw",
+                  backgroundColor: "red",
+                  top: 50,
+                  left: 0,
+                  right: 0,
+                  margin: "0 auto",
+                }}
+              ></motion.div>
+            ) : null}
+          </AnimatePresence>
         </>
       )}
     </Wrapper>

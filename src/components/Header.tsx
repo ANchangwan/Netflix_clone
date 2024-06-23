@@ -127,12 +127,6 @@ function Header() {
                 {tvMatch && <CirCle layoutId="circle" />}
               </Item>
             </Link>
-            <Link to="/login">
-              <Item>
-                login
-                {tvMatch && <CirCle layoutId="circle" />}
-              </Item>
-            </Link>
           </Items>
         </Col>
         <Col>
