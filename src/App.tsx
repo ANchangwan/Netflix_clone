@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  BrowserRouter,
+
   RouterProvider,
   createBrowserRouter,
 } from "react-router-dom";
