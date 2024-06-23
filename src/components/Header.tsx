@@ -134,7 +134,7 @@ function Header() {
                 {homeMatch && <CirCle layoutId="circle" />}
               </Item>
             </Link>
-            <Link to="tv">
+            <Link to="tvs">
               <Item>
                 Tv shows
                 {tvMatch && <CirCle layoutId="circle" />}

@@ -7,6 +7,8 @@ interface IMovie {
   poster_path: string;
   title: string;
   overview: string;
+  vote_average: number;
+  name: string;
 }
 
 export interface IGetMoviesResult {
@@ -20,8 +22,31 @@ export interface IGetMoviesResult {
   total_results: number;
 }
 
-export async function getMovies() {
+export function getMovies() {
   return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}`).then(
     (response) => response.json()
   );
+}
+export function getLatestMovies() {
+  return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}`).then(
+    (response) => response.json()
+  );
+}
+
+export function getUpcoming() {
+  return fetch(`${BASE_PATH}/movie/upcoming?api_key=${API_KEY}`).then(
+    (response) => response.json()
+  );
+}
+
+export function getTV() {
+  return fetch(`${BASE_PATH}/tv/top_rated?api_key=${API_KEY}`).then(
+    (response) => response.json()
+  );
+}
+
+export function search(keyword: string) {
+  return fetch(
+    `${BASE_PATH}/search/movie?query=${keyword}&api_key=${API_KEY}`
+  ).then((response) => response.json());
 }

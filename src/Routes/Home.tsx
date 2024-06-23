@@ -1,6 +1,11 @@
 import { useQuery } from "react-query";
 import { useMatch, useNavigate } from "react-router-dom";
-import { IGetMoviesResult, getMovies } from "./api";
+import {
+  IGetMoviesResult,
+  getLatestMovies,
+  getMovies,
+  getUpcoming,
+} from "./api";
 import { styled } from "styled-components";
 import { makeImagePath } from "./utilit";
 import { AnimatePresence, motion, useScroll } from "framer-motion";
@@ -8,6 +13,7 @@ import { useState } from "react";
 
 const Wrapper = styled.div`
   background-color: black;
+  height: 500vh;
 `;
 
 const Loader = styled.div`
@@ -60,36 +66,47 @@ const BigMovie = styled(motion.div)`
   background-color: ${(props) => props.theme.black.lighter};
 `;
 
-const BigCover = styled.img`
+const BigCover = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: end;
   height: 300px;
   width: 100%;
   background-position: center center;
   background-size: cover;
+  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 2));
 `;
 
 const BigTitle = styled.h2`
+  width: 33%;
   color: ${(props) => props.theme.white.lighter};
-  font-size: 28px;
-  position: relative;
-  padding: 20px;
-  top: -60px;
+  font-size: 40px;
+  font-family: 500;
 `;
 
 const OverView = styled.p`
   font-size: 20px;
   width: 50%;
 `;
+const Detail = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  padding: 20px;
+  gap: 50px;
+`;
 
 const BigOverview = styled.p`
   padding: 20px;
-  position: relative;
-  top: -80px;
   color: ${(props) => props.theme.white.lighter};
 `;
 
 const Slider = styled(motion.div)`
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
   position: relative;
+  margin: 0 50px;
   top: -100px;
+  gap: 30px;
 `;
 
 const Row = styled(motion.div)`
@@ -97,7 +114,21 @@ const Row = styled(motion.div)`
   grid-template-columns: repeat(6, 1fr);
   gap: 10px;
   position: absolute;
+  top: 80px;
   width: 100%;
+`;
+
+const Rating = styled.div`
+  position: absolute;
+  right: 150px;
+  top: 0px;
+`;
+
+const Explain = styled.div`
+  position: absolute;
+  top: 300px;
+  right: 50px;
+  width: 50%;
 `;
 
 const Box = styled(motion.div)<{ bgPhoto: string }>`
@@ -138,6 +169,17 @@ const Overlay = styled(motion.div)`
   background-color: rgba(0, 0, 0, 0.5);
 `;
 
+const Poster = styled.div<{ bgPhoto: string }>`
+  height: 200px;
+  width: 100px;
+  border-radius: 15px;
+  position: absolute;
+  top: 160px;
+  background-image: url(${(props) => props.bgPhoto});
+  background-size: cover;
+  background-position: center center;
+`;
+
 const boxVariants = {
   normal: {
     scale: 1,
@@ -165,12 +207,14 @@ const infoVariants = {
 
 const offset = 6;
 
-
-
 function Home() {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const bigMovieMatch = useMatch("/movies/:movieId");
+  const { data: upcoming, isLoading: upcomingLoading } =
+    useQuery<IGetMoviesResult>(["movies", "upcoming"], getUpcoming);
+  const { data: latestMoive, isLoading: latestLoading } =
+    useQuery<IGetMoviesResult>(["movies", "top_rated"], getLatestMovies);
   const { data, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "now_playing"],
     getMovies
@@ -212,7 +256,9 @@ function Home() {
             <Title>{data?.results[0]?.title}</Title>
             <OverView>{data?.results[0]?.overview}</OverView>
           </Banner>
+
           <Slider>
+            <Title>Now Playing</Title>
             <AnimatePresence initial={false} onExitComplete={toggleLeavig}>
               <Row
                 variants={rowVarinats}
@@ -244,6 +290,73 @@ function Home() {
               </Row>
             </AnimatePresence>
           </Slider>
+          <Slider>
+            <Title>latest Movie</Title>
+            <AnimatePresence initial={false} onExitComplete={toggleLeavig}>
+              <Row
+                variants={rowVarinats}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ type: "tween", duration: 1 }}
+                key={index % 3}
+              >
+                {latestMoive?.results
+                  .slice(1)
+                  .slice(offset * index, offset * index + offset)
+                  .map((movie) => (
+                    <Box
+                      layoutId={movie.id + ""}
+                      onClick={() => onBoxClicked(movie.id)}
+                      variants={boxVariants}
+                      whileHover="hover"
+                      initial="normal"
+                      transition={{ type: "tween" }}
+                      key={movie.id}
+                      bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                    >
+                      <Info variants={infoVariants}>
+                        <h4>{movie.title}</h4>
+                      </Info>
+                    </Box>
+                  ))}
+              </Row>
+            </AnimatePresence>
+          </Slider>
+          <Slider>
+            <Title>Upcoming</Title>
+            <AnimatePresence initial={false} onExitComplete={toggleLeavig}>
+              <Row
+                variants={rowVarinats}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ type: "tween", duration: 1 }}
+                key={index % 3}
+              >
+                {upcoming?.results
+                  .slice(1)
+                  .slice(offset * index, offset * index + offset)
+                  .map((movie) => (
+                    <Box
+                      layoutId={movie.id + ""}
+                      onClick={() => onBoxClicked(movie.id)}
+                      variants={boxVariants}
+                      whileHover="hover"
+                      initial="normal"
+                      transition={{ type: "tween" }}
+                      key={movie.id}
+                      bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                    >
+                      <Info variants={infoVariants}>
+                        <h4>{movie.title}</h4>
+                      </Info>
+                    </Box>
+                  ))}
+              </Row>
+            </AnimatePresence>
+          </Slider>
+
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
@@ -260,14 +373,33 @@ function Home() {
                     <>
                       <BigCover
                         style={{
-                          backgroundImage: `url(${makeImagePath(
-                            clickedMovie.backdrop_path,
+                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
+                            clickedMovie.backdrop_path || "",
                             "w500"
                           )})`,
                         }}
-                      />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
-                      <BigOverview>{clickedMovie.overview}</BigOverview>
+                      >
+                        <BigTitle>{clickedMovie.title}</BigTitle>
+                      </BigCover>
+                      <Detail>
+                        <div>
+                          <Poster
+                            bgPhoto={makeImagePath(
+                              clickedMovie.poster_path,
+                              "w500"
+                            )}
+                          ></Poster>
+                        </div>
+                        <Explain>
+                          <Rating>
+                            <span>{clickedMovie.vote_average}</span>
+                            <span>⭐️</span>
+                          </Rating>
+                          <BigOverview>
+                            {clickedMovie.overview.slice(0, 200)}...
+                          </BigOverview>
+                        </Explain>
+                      </Detail>
                     </>
                   )}
                 </BigMovie>
