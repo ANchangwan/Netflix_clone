@@ -3,6 +3,8 @@ import { Outlet } from "react-router-dom";
 import { IGetMoviesResult, getMovies } from "./api";
 import { styled } from "styled-components";
 import { makeImagePath } from "./utilit";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 
 const Wrapper = styled.div`
   background-color: black;
@@ -37,22 +39,72 @@ const OverView = styled.p`
   width: 50%;
 `;
 
+const Slider = styled(motion.div)`
+  position: relative;
+  top: -100px;
+`;
+
+const Row = styled(motion.div)`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  position: absolute;
+  width: 100%;
+`;
+
+const Box = styled(motion.div)`
+  background-color: white;
+  color: red;
+  font-size: 66px;
+  height: 200px;
+`;
+
+const rowVarinats = {
+  hidden: { x: window.outerWidth + 10 },
+  visible: {
+    x: 0,
+  },
+  exit: {
+    x: -window.outerWidth - 10,
+  },
+};
+
 function Home() {
   const { data, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "now_playing"],
     getMovies
   );
-  console.log(data?.results[0]?.title);
+  const [index, setIndex] = useState(0);
+  const increaseIndex = () => setIndex((prev) => prev + 1);
   return (
     <Wrapper>
       {isLoading ? (
         <Loader>Loading...</Loader>
       ) : (
         <>
-          <Banner bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}>
+          <Banner
+            onClick={increaseIndex}
+            bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}
+          >
             <Title>{data?.results[0]?.title}</Title>
             <OverView>{data?.results[0]?.overview}</OverView>
           </Banner>
+          <Slider>
+            <AnimatePresence>
+              <Row
+                variants={rowVarinats}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={{ type: "tween", duration: 1 }}
+                key={index % 3}
+              >
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Box key={i}>{i}</Box>
+                ))}
+              </Row>
+            </AnimatePresence>
+          </Slider>
         </>
       )}
     </Wrapper>
